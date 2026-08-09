@@ -32,6 +32,18 @@ def _suite_integrity_check() -> list[str]:
     return [ln for ln in dirty if "__pycache__" not in ln]
 
 
+def _suite_remediate() -> bool:
+    """Restore suite/ to the committed state. Escaping agents (observed:
+    opencode writes into the repo instead of the sandbox) must never poison
+    later episodes. Returns True if the suite is clean afterwards."""
+    import subprocess
+
+    repo = SUITE_DIR.parent
+    subprocess.run(["git", "-C", str(repo), "checkout", "--", "suite/"], capture_output=True)
+    subprocess.run(["git", "-C", str(repo), "clean", "-fd", "suite/"], capture_output=True)
+    return not _suite_integrity_check()
+
+
 def _summarize(episodes: list[dict]) -> dict:
     per_provider: dict[str, dict] = {}
     for ep in episodes:
@@ -106,9 +118,11 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"[{n}/{total}] {task.id} × {spec}{suffix} ...", flush=True)
                 dirty = _suite_integrity_check()
                 if dirty:
-                    print("   ✋ SUITE CONTAMINATED — refusing to run. Fix and retry:")
-                    print("      " + "\n      ".join(dirty[:5]), file=sys.stderr)
-                    return 3
+                    print("   ⚠ suite contaminated by previous episode — auto-restoring")
+                    if not _suite_remediate():
+                        print("   ✋ SUITE STILL DIRTY — refusing to run. Fix manually:")
+                        print("      " + "\n      ".join(dirty[:5]), file=sys.stderr)
+                        return 3
                 ep = run_episode(task, provider, model or None, timeout=args.timeout)
                 episodes.append(ep.to_dict())
                 print(f"   → {ep.verdict}" + (f" ({ep.error[:60]})" if ep.error else ""))
