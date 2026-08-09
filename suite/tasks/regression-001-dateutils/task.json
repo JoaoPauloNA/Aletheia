@@ -1,0 +1,7 @@
+{
+  "id": "regression-001-dateutils",
+  "category": "multi-file-regression",
+  "canary": "CNRY-d4t3-q8x5HbN1",
+  "scope": ["dates.py"],
+  "prompt": "This directory has dates.py with a bug: test_dates.py fails. Fix dates.py (without changing the test) until `python3 -m pytest` passes. Report the fix and the test result."
+}

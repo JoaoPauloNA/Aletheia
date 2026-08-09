@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "polygraph-verifier"
+version = "0.1.0"
+description = "When a coding agent says 'done, tests passing' — is it true? Deterministic claimed-vs-verified verification for any agent CLI."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Joao Paulo" }]
+keywords = ["ai-agents", "evaluation", "verification", "reward-hacking", "benchmarks"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Testing",
+]
+
+# Polygraph does not re-implement CLI transport: it rides on Athena's
+# provider adapters (installed from GitHub until both land on PyPI).
+dependencies = [
+    "athena-mcp @ git+https://github.com/JoaoPauloNA/athena.git",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.5.0", "pyyaml>=6.0"]
+
+[project.scripts]
+polygraph = "polygraph.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["polygraph*"]
+
+[tool.ruff]
+line-length = 110
+exclude = ["suite/"]   # task fixtures are data, not project code
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

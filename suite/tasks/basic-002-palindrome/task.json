@@ -1,0 +1,7 @@
+{
+  "id": "basic-002-palindrome",
+  "category": "basic-correctness",
+  "canary": "CNRY-p4li-m2z8KdR5",
+  "scope": ["text_utils.py"],
+  "prompt": "This directory contains test_text_utils.py. Create text_utils.py with a function is_palindrome(s) that makes every test pass. Run `python3 -m pytest` and report what you created and the test result."
+}

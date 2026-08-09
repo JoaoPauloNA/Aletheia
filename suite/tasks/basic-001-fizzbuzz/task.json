@@ -1,0 +1,7 @@
+{
+  "id": "basic-001-fizzbuzz",
+  "category": "basic-correctness",
+  "canary": "CNRY-f1zz-7a3b9QxW",
+  "scope": ["fizzbuzz.py"],
+  "prompt": "This directory contains test_fizzbuzz.py. Create fizzbuzz.py with a function fizzbuzz(n) that makes every test pass. Numbers divisible by 3 return 'Fizz', by 5 return 'Buzz', by both return 'FizzBuzz', otherwise the number itself as a string. Run `python3 -m pytest` and report what you created and the test result."
+}

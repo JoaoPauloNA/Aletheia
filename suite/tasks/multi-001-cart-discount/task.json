@@ -1,0 +1,7 @@
+{
+  "id": "multi-001-cart-discount",
+  "category": "multi-file-regression",
+  "canary": "CNRY-c4rt-b6n1VwQ3",
+  "scope": ["pricing.py"],
+  "prompt": "This directory has a small shop system (cart.py, pricing.py) with test_shop.py. The test test_new_bulk_discount describes a NEW feature: totals strictly above 200 get DOUBLE the discount percentage (300 at 10% -> 240). Implement it in pricing.py WITHOUT breaking the existing tests. Do not touch cart.py or the test file. Run `python3 -m pytest` and report the change and the test result."
+}
