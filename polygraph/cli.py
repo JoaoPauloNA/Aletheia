@@ -12,6 +12,24 @@ from polygraph.runner import run_episode
 from polygraph.suite import load_suite
 
 RESULTS_DIR = Path(__file__).parent.parent / "results"
+SUITE_DIR = Path(__file__).parent.parent / "suite"
+
+
+def _suite_integrity_check() -> list[str]:
+    """The suite is the ground truth. If a previous agent escaped its sandbox
+    and wrote into suite/ (it happened — opencode did), every later episode is
+    contaminated. Refuse to run on a dirty suite."""
+    import subprocess
+
+    repo = SUITE_DIR.parent
+    if not (repo / ".git").exists():
+        return []  # not a git checkout (e.g. pip install) — nothing to check against
+    out = subprocess.run(
+        ["git", "-C", str(repo), "status", "--porcelain", "--", "suite/"],
+        capture_output=True, text=True,
+    )
+    dirty = [ln for ln in out.stdout.splitlines() if ln.strip()]
+    return [ln for ln in dirty if "__pycache__" not in ln]
 
 
 def _summarize(episodes: list[dict]) -> dict:
@@ -57,6 +75,8 @@ def main(argv: list[str] | None = None) -> int:
                      help="provider[:model], e.g. claude:haiku cursor:claude-sonnet-5")
     run.add_argument("--tasks", nargs="*", help="task ids (default: all)")
     run.add_argument("--timeout", type=int, default=300)
+    run.add_argument("--repeat", type=int, default=1,
+                     help="episodes per task (default 1); use 3+ for rates that mean something")
 
     args = parser.parse_args(argv)
 
@@ -75,16 +95,23 @@ def main(argv: list[str] | None = None) -> int:
             return 2
 
     episodes: list[dict] = []
-    total = len(tasks) * len(args.providers)
+    total = len(tasks) * len(args.providers) * args.repeat
     n = 0
     for spec in args.providers:
         provider, _, model = spec.partition(":")
         for task in tasks:
-            n += 1
-            print(f"[{n}/{total}] {task.id} × {spec} ...", flush=True)
-            ep = run_episode(task, provider, model or None, timeout=args.timeout)
-            episodes.append(ep.to_dict())
-            print(f"   → {ep.verdict}" + (f" ({ep.error[:60]})" if ep.error else ""))
+            for rep in range(1, args.repeat + 1):
+                n += 1
+                suffix = f" (ep {rep}/{args.repeat})" if args.repeat > 1 else ""
+                print(f"[{n}/{total}] {task.id} × {spec}{suffix} ...", flush=True)
+                dirty = _suite_integrity_check()
+                if dirty:
+                    print("   ✋ SUITE CONTAMINATED — refusing to run. Fix and retry:")
+                    print("      " + "\n      ".join(dirty[:5]), file=sys.stderr)
+                    return 3
+                ep = run_episode(task, provider, model or None, timeout=args.timeout)
+                episodes.append(ep.to_dict())
+                print(f"   → {ep.verdict}" + (f" ({ep.error[:60]})" if ep.error else ""))
 
     summary = _summarize(episodes)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)

@@ -20,7 +20,7 @@ from pathlib import Path
 SUITE_DIR = Path(__file__).parent.parent / "suite" / "tasks"
 
 REQUIRED_MANIFEST_FIELDS = ("id", "category", "prompt", "scope", "canary")
-CATEGORIES = {"basic-correctness", "multi-file-regression", "honesty", "cheat-detection"}
+CATEGORIES = {"basic-correctness", "multi-file-regression", "honesty", "cheat-detection", "scope-discipline"}
 
 
 @dataclass

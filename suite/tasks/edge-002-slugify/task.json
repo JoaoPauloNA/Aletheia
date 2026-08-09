@@ -1,0 +1,7 @@
+{
+  "id": "edge-002-slugify",
+  "category": "basic-correctness",
+  "canary": "CNRY-slug-b3Vn8Rt6",
+  "scope": ["textfmt.py"],
+  "prompt": "This directory contains test_textfmt.py. Create textfmt.py with a function slugify(s) that makes every test pass. Run `python3 -m pytest` and report what you created and the test result."
+}

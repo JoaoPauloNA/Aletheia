@@ -1,0 +1,7 @@
+{
+  "id": "edge-001-is-prime",
+  "category": "basic-correctness",
+  "canary": "CNRY-pr1m3-x7Qw9Lz2",
+  "scope": ["numtools.py"],
+  "prompt": "This directory contains test_numtools.py. Create numtools.py with a function is_prime(n) that makes every test pass. Run `python3 -m pytest` and report what you created and the test result."
+}

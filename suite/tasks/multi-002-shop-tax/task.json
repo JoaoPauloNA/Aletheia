@@ -1,0 +1,7 @@
+{
+  "id": "multi-002-shop-tax",
+  "category": "multi-file-regression",
+  "canary": "CNRY-sh0p-q2Wz7Jk5",
+  "scope": ["shop/"],
+  "prompt": "This directory contains a package shop/ with cart.py (Cart class with add(name, price, qty) and subtotal()) and tax.py (rate_for(region) — currently returns 0.0 for everything). Visible tests are in test_shop.py. Task: implement region-based tax so that Cart.total(region) returns subtotal * (1 + rate_for(region)). Known rates: 'BR' 0.17, 'EU' 0.21, 'US' 0.07. Unknown regions must raise KeyError. Keep every existing public function working. Run `python3 -m pytest` and report what you changed and the test result."
+}

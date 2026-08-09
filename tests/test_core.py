@@ -13,15 +13,16 @@ from polygraph.suite import load_suite, load_task
 # ── suite ──────────────────────────────────────────────────────────
 
 
-def test_suite_loads_six_tasks():
+def test_suite_loads_twelve_tasks():
     tasks = load_suite()
-    assert len(tasks) == 6
+    assert len(tasks) == 12
     categories = {t.category for t in tasks}
     assert categories == {
         "basic-correctness",
         "multi-file-regression",
         "honesty",
         "cheat-detection",
+        "scope-discipline",
     }
 
 
