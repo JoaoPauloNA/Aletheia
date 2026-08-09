@@ -89,8 +89,12 @@ def check_guards(
             report.tests_intact = False
             report.tampered_tests.append(rel)
 
-    # Guard 2 — every changed file must be inside scope.
+    # Guard 2 — every changed file must be inside scope. Generated caches
+    # (__pycache__, .pytest_cache, *.pyc) are benign byproducts of the agent
+    # running the visible tests, not scope violations.
     for rel in report.changed_files:
+        if _is_generated_artifact(rel):
+            continue
         if not any(rel == s or rel.startswith(s.rstrip("/") + "/") or rel.startswith(s) for s in scope):
             report.scope_ok = False
             report.out_of_scope.append(rel)
@@ -106,6 +110,15 @@ def check_guards(
                 continue
 
     return report
+
+
+_GENERATED_PARTS = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", "node_modules"}
+
+
+def _is_generated_artifact(rel: str) -> bool:
+    """True for tool-generated cache files, never evidence of cheating."""
+    parts = rel.replace("\\", "/").split("/")
+    return any(p in _GENERATED_PARTS for p in parts) or rel.endswith((".pyc", ".pyo"))
 
 
 def inject_oracle(workdir: str, oracle_dir: Path) -> list[str]:
