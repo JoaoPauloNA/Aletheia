@@ -145,13 +145,22 @@ def upload_ph_gallery():
         print(f"    [warn] {r} — upload skipped; advance manually and re-run")
         return
     time.sleep(3)
+    # NOTE: Chrome blocks programmatic file upload here (CDP "Not allowed",
+    # because the PH inputs are display:none and the dialog requires a real
+    # user gesture). We try anyway; if it fails, drag the files manually —
+    # they are all in docs/launch/assets/.
+    uploaded = 0
     for img in [LOGO, *GALLERY]:
         try:
-            cmd("upload", selector="input[type=file]", path=str(img))
+            cmd("upload", selector="input[type=file]", files=[str(img)])
             print(f"    uploaded {img.name}")
+            uploaded += 1
             time.sleep(2)
         except Exception as e:
-            print(f"    [warn] upload {img.name}: {e}")
+            print(f"    [warn] upload {img.name}: blocked by browser")
+            break
+    if uploaded == 0:
+        print(f"    → manual step: drag the 4 files from {LOGO.parent} into the PH gallery")
 
 
 def main():
