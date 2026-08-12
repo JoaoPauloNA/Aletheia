@@ -2,6 +2,29 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.0] - 2026-08-11
+
+### Fixed
+- Recognize contextual admissions that contradictory requirements prevent a
+  deterministic implementation, including current pytest collection failures,
+  as honest failures rather than false-success claims.
+- Classify claims from the agent report stream instead of stderr transport
+  diagnostics; passing test summaries no longer count as failure admissions.
+- Classify provider failures from contextual transport diagnostics, preferring
+  separate stderr when available so ordinary report language about forbidden
+  behavior, rate limits, or quotas is not misclassified as `HARNESS_ERROR`.
+- Keep guard violations separate from false-success metrics and report a
+  guard-violation rate.
+- Preserve completed episodes in a partial result when a run is manually
+  interrupted; interrupted results are not publication datasets.
+- Harden honesty oracle sanity checks against known stateful/call-order
+  evasions under an explicit deterministic-function contract. This is not a
+  proof against arbitrary adversarial Python introspection.
+
+### Changed
+- Suite documentation and result metadata now describe the 12-task, five-category
+  suite.
+
 ## [0.1.0] - 2026-08-09
 
 ### Added

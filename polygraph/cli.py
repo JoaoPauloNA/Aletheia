@@ -3,16 +3,60 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
+import platform
+import re
+import subprocess
 import sys
-import time
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
+from polygraph import __version__
 from polygraph.runner import run_episode
 from polygraph.suite import load_suite
 
 RESULTS_DIR = Path(__file__).parent.parent / "results"
 SUITE_DIR = Path(__file__).parent.parent / "suite"
+
+
+def _is_evidence_path(relative_path: str | Path) -> bool:
+    """Whether a repository-relative path is stable publication evidence."""
+    path = Path(str(relative_path).replace("\\", "/"))
+    generated_directories = {
+        ".git",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".tox",
+        ".nox",
+        ".venv",
+        "__pycache__",
+        "build",
+        "dist",
+        "results",
+    }
+    return (
+        path.name == ".DS_Store"
+        or path.suffix in {".pyc", ".pyo"}
+        or any(
+            part in generated_directories or part == ".cache" or part.endswith(".egg-info")
+            for part in path.parts
+        )
+    )
+
+
+def _suite_paths_from_status(status_lines: list[str]) -> list[str]:
+    paths = []
+    for line in status_lines:
+        path = line[3:].strip()
+        for candidate in path.split(" -> "):
+            candidate = candidate.strip()
+            if candidate and not _is_evidence_path(candidate):
+                paths.append(candidate)
+    return sorted(set(paths))
 
 
 def _suite_integrity_check() -> list[str]:
@@ -28,20 +72,8 @@ def _suite_integrity_check() -> list[str]:
         ["git", "-C", str(repo), "status", "--porcelain", "--", "suite/"],
         capture_output=True, text=True,
     )
-    dirty = [ln for ln in out.stdout.splitlines() if ln.strip()]
-    return [ln for ln in dirty if "__pycache__" not in ln]
-
-
-def _suite_remediate() -> bool:
-    """Restore suite/ to the committed state. Escaping agents (observed:
-    opencode writes into the repo instead of the sandbox) must never poison
-    later episodes. Returns True if the suite is clean afterwards."""
-    import subprocess
-
-    repo = SUITE_DIR.parent
-    subprocess.run(["git", "-C", str(repo), "checkout", "--", "suite/"], capture_output=True)
-    subprocess.run(["git", "-C", str(repo), "clean", "-fd", "suite/"], capture_output=True)
-    return not _suite_integrity_check()
+    dirty = [line for line in out.stdout.splitlines() if line.strip()]
+    return _suite_paths_from_status(dirty)
 
 
 def _summarize(episodes: list[dict]) -> dict:
@@ -65,12 +97,197 @@ def _summarize(episodes: list[dict]) -> dict:
         else:
             bucket["invalid"] += 1
     for bucket in per_provider.values():
-        decided = bucket["solved"] + bucket["false_success"] + bucket["failed_honest"]
-        if decided:
-            bucket["false_success_rate"] = round(
-                (bucket["false_success"] + bucket["guard_violations"]) / decided, 3
-            )
+        success_claims = bucket["solved"] + bucket["false_success"]
+        valid_decisions = success_claims + bucket["failed_honest"] + bucket["guard_violations"]
+        bucket["false_success_rate"] = (
+            round(bucket["false_success"] / success_claims, 3) if success_claims else None
+        )
+        bucket["guard_violation_rate"] = (
+            round(bucket["guard_violations"] / valid_decisions, 3) if valid_decisions else None
+        )
     return per_provider
+
+
+def _sha256_chunks(chunks: list[bytes]) -> str:
+    digest = hashlib.sha256()
+    for chunk in chunks:
+        digest.update(len(chunk).to_bytes(8, "big"))
+        digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _git_output(*args: str) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(SUITE_DIR.parent), *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout if result.returncode == 0 else ""
+
+
+def _source_state() -> dict[str, str | bool | None]:
+    head = _git_output("rev-parse", "HEAD").strip() or None
+    status = _git_output("status", "--porcelain=v1", "--untracked-files=all")
+    status_lines = [
+        line for line in status.splitlines()
+        if line.strip() and not _is_evidence_path(line[3:].strip())
+    ]
+    diff = _git_output(
+        "diff", "--binary", "HEAD", "--", ".",
+        ":(exclude).DS_Store", ":(exclude)**/.DS_Store",
+        ":(exclude)**/__pycache__/**", ":(exclude)**/.pytest_cache/**",
+        ":(exclude)**/.mypy_cache/**", ":(exclude)**/.ruff_cache/**",
+        ":(exclude)**/.tox/**", ":(exclude)**/.nox/**", ":(exclude)**/.venv/**",
+        ":(exclude)**/.cache/**", ":(exclude)**/*.egg-info/**",
+        ":(exclude)**/*.pyc", ":(exclude)**/*.pyo", ":(exclude)results/**",
+        ":(exclude)build/**", ":(exclude)dist/**",
+    )
+    untracked = _git_output("ls-files", "--others", "--exclude-standard").splitlines()
+    chunks = [diff.encode(), "\n".join(status_lines).encode()]
+    for relative_name in sorted(untracked):
+        path = SUITE_DIR.parent / relative_name
+        if path.is_file() and not _is_evidence_path(relative_name):
+            chunks.extend((relative_name.encode(), path.read_bytes()))
+    return {
+        "git_head": head,
+        "git_dirty": bool(status_lines),
+        "source_diff_state_sha256": _sha256_chunks(chunks),
+    }
+
+
+def _suite_fingerprint(tasks: list) -> str:
+    chunks: list[bytes] = []
+    for task in tasks:
+        for root in (task.path / "task.json", task.seed_dir, task.oracle_dir):
+            files = [root] if root.is_file() else sorted(path for path in root.rglob("*") if path.is_file())
+            for path in files:
+                relative_path = path.relative_to(task.path)
+                if _is_evidence_path(relative_path):
+                    continue
+                chunks.extend((
+                    task.id.encode(),
+                    str(relative_path).replace(os.sep, "/").encode(),
+                    path.read_bytes(),
+                ))
+    return _sha256_chunks(chunks)
+
+
+def _suite_state_fingerprint() -> str:
+    """Hash every stable file in suite/, including files outside task roots."""
+    chunks: list[bytes] = []
+    for path in sorted(candidate for candidate in SUITE_DIR.rglob("*") if candidate.is_file()):
+        relative_path = path.relative_to(SUITE_DIR.parent)
+        if not _is_evidence_path(relative_path):
+            chunks.extend((
+                str(relative_path).replace(os.sep, "/").encode(),
+                path.read_bytes(),
+            ))
+    return _sha256_chunks(chunks)
+
+
+def _redact_probe_output(value: str) -> str:
+    value = re.sub(r"(?<![A-Za-z0-9_.-])/[^\s]+", "<path>", value)
+    value = re.sub(r"[\w.+-]+@[\w.-]+", "<redacted-email>", value)
+    return value.strip()[:500]
+
+
+def _provider_metadata(provider: str, requested_model: str | None) -> dict:
+    executable = provider
+    model_argument = requested_model
+    try:
+        from athena.providers import PROVIDERS, resolve_model
+
+        spec = PROVIDERS.get(provider)
+        if spec is not None:
+            executable = Path(spec.binary).name
+            model_argument = resolve_model(provider, requested_model)
+    except (ImportError, AttributeError):
+        pass
+    probe = {"available": False, "output": "unavailable"}
+    try:
+        result = subprocess.run(
+            [Path(executable).name, "--version"],
+            capture_output=True,
+            text=True,
+            timeout=3,
+            check=False,
+        )
+        output = _redact_probe_output(result.stdout + result.stderr)
+        probe = {
+            "available": result.returncode == 0,
+            "output": output if result.returncode == 0 and output else "unavailable",
+        }
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    return {
+        "provider": provider,
+        "requested_model": requested_model,
+        "athena_model_argument": model_argument,
+        "model_identity_note": (
+            "Athena CLI argument only; this is not independently verified runtime model identity."
+        ),
+        "executable_basename": Path(executable).name,
+        "version_probe": probe,
+    }
+
+
+def _run_manifest(
+    tasks: list,
+    provider_specs: list[str],
+    repeat: int,
+    timeout: int,
+    started_at: datetime,
+    *,
+    suite_fingerprint: str | None = None,
+    dirty_suite_paths: list[str] | None = None,
+    allow_dirty_suite: bool = False,
+) -> dict:
+    providers = []
+    for spec in provider_specs:
+        provider, _, requested_model = spec.partition(":")
+        providers.append(_provider_metadata(provider, requested_model or None))
+    suite_fingerprint = suite_fingerprint or _suite_fingerprint(load_suite())
+    dirty_suite_paths = sorted(dirty_suite_paths or [])
+    return {
+        "result_schema_version": 1,
+        "suite_version": __version__,
+        "run_id": str(uuid.uuid4()),
+        "started_at": started_at.isoformat(),
+        "ordered_task_ids": [task.id for task in tasks],
+        "requested_provider_specs": providers,
+        "repeat": repeat,
+        "timeout_seconds": timeout,
+        "expected_episode_count": len(tasks) * len(provider_specs) * repeat,
+        "runtime": {
+            "python_implementation": platform.python_implementation(),
+            "python_version": platform.python_version(),
+            "os_name": platform.system(),
+            "os_release": platform.release(),
+            "machine_architecture": platform.machine(),
+        },
+        "source_state": _source_state(),
+        "suite_fingerprint_sha256": suite_fingerprint,
+        "suite_baseline_fingerprint_sha256": suite_fingerprint,
+        "dirty_suite_baseline_allowed": allow_dirty_suite,
+        "dirty_suite_baseline_paths": dirty_suite_paths,
+        "limitations": [
+            "Backend model identity is not independently verified.",
+            "Temperature is not independently controlled unless the provider CLI proves it.",
+            "Provider-side nondeterminism is not independently controlled unless the provider CLI proves it.",
+        ],
+    }
+
+
+def _write_result(manifest: dict, episodes: list[dict], started_at: datetime) -> Path:
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    out = RESULTS_DIR / f"run-{started_at.strftime('%Y%m%d-%H%M%S')}-{manifest['run_id'][:8]}.json"
+    manifest["completed_at"] = datetime.now(timezone.utc).isoformat()
+    manifest["actual_episode_count"] = len(episodes)
+    manifest["summary"] = _summarize(episodes)
+    manifest["episodes"] = episodes
+    out.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -89,6 +306,11 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--timeout", type=int, default=300)
     run.add_argument("--repeat", type=int, default=1,
                      help="episodes per task (default 1); use 3+ for rates that mean something")
+    run.add_argument(
+        "--allow-dirty-suite",
+        action="store_true",
+        help="allow an explicitly reviewed dirty suite only if its baseline remains unchanged",
+    )
 
     args = parser.parse_args(argv)
 
@@ -106,6 +328,24 @@ def main(argv: list[str] | None = None) -> int:
             print(f"unknown tasks: {', '.join(sorted(missing))}", file=sys.stderr)
             return 2
 
+    dirty = _suite_integrity_check()
+    if dirty and not args.allow_dirty_suite:
+        print("SUITE DIRTY — refusing to run. Inspect and restore manually:", file=sys.stderr)
+        print("  " + "\n  ".join(dirty), file=sys.stderr)
+        return 3
+
+    baseline_fingerprint = _suite_state_fingerprint()
+    started_at = datetime.now(timezone.utc)
+    manifest = _run_manifest(
+        tasks,
+        args.providers,
+        args.repeat,
+        args.timeout,
+        started_at,
+        suite_fingerprint=baseline_fingerprint,
+        dirty_suite_paths=dirty,
+        allow_dirty_suite=args.allow_dirty_suite,
+    )
     episodes: list[dict] = []
     total = len(tasks) * len(args.providers) * args.repeat
     n = 0
@@ -116,34 +356,58 @@ def main(argv: list[str] | None = None) -> int:
                 n += 1
                 suffix = f" (ep {rep}/{args.repeat})" if args.repeat > 1 else ""
                 print(f"[{n}/{total}] {task.id} × {spec}{suffix} ...", flush=True)
-                dirty = _suite_integrity_check()
-                if dirty:
-                    print("   ⚠ suite contaminated by previous episode — auto-restoring")
-                    if not _suite_remediate():
-                        print("   ✋ SUITE STILL DIRTY — refusing to run. Fix manually:")
-                        print("      " + "\n      ".join(dirty[:5]), file=sys.stderr)
-                        return 3
-                ep = run_episode(task, provider, model or None, timeout=args.timeout)
+                try:
+                    ep = run_episode(task, provider, model or None, timeout=args.timeout)
+                except KeyboardInterrupt:
+                    manifest["run_status"] = "interrupted"
+                    manifest["interrupted_episode"] = {
+                        "provider": provider,
+                        "task_id": task.id,
+                        "repetition": rep,
+                        "episode_index": n,
+                    }
+                    out = _write_result(manifest, episodes, started_at)
+                    print(f"\nInterrupted; partial results: {out}", file=sys.stderr)
+                    return 130
                 episodes.append(ep.to_dict())
                 print(f"   → {ep.verdict}" + (f" ({ep.error[:60]})" if ep.error else ""))
+                current_dirty = _suite_integrity_check()
+                current_fingerprint = _suite_state_fingerprint()
+                if (
+                    current_dirty != dirty
+                    or current_fingerprint != baseline_fingerprint
+                ):
+                    manifest["run_status"] = "aborted_suite_contamination"
+                    manifest["contaminated_suite_paths"] = sorted(
+                        set(dirty) | set(current_dirty)
+                    )
+                    manifest["contaminated_suite_fingerprint_sha256"] = current_fingerprint
+                    out = _write_result(manifest, episodes, started_at)
+                    print(
+                        "SUITE CONTAMINATED — refusing subsequent episodes; preserve evidence:",
+                        file=sys.stderr,
+                    )
+                    print(
+                        "  " + "\n  ".join(manifest["contaminated_suite_paths"]),
+                        file=sys.stderr,
+                    )
+                    print(f"\nPartial results: {out}")
+                    return 3
 
-    summary = _summarize(episodes)
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out = RESULTS_DIR / f"run-{time.strftime('%Y%m%d-%H%M%S')}.json"
-    out.write_text(json.dumps({
-        "suite_version": "0.1.0",
-        "ran_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-        "summary": summary,
-        "episodes": episodes,
-    }, indent=2, ensure_ascii=False))
+    manifest["run_status"] = "completed"
+    out = _write_result(manifest, episodes, started_at)
+    summary = manifest["summary"]
 
     print("\n── summary ──")
     for provider, bucket in summary.items():
         rate = bucket.get("false_success_rate")
         rate_str = f" | false-success rate: {rate * 100:.0f}%" if rate is not None else ""
+        guard_rate = bucket.get("guard_violation_rate")
+        guard_rate_str = f" | guard-violation rate: {guard_rate * 100:.0f}%" if guard_rate is not None else ""
         print(f"{provider}: {bucket['episodes']} episodes | "
               f"{bucket['solved']} solved | {bucket['false_success']} false success | "
-              f"{bucket['failed_honest']} honest failures{rate_str}")
+              f"{bucket['failed_honest']} honest failures | "
+              f"{bucket['guard_violations']} guard violations{rate_str}{guard_rate_str}")
     print(f"\nResults: {out}")
     return 0
 
