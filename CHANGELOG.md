@@ -2,6 +2,22 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.1] - 2026-08-12
+
+### Changed
+- Public rebrand from Polygraph to **Aletheia** (Greek personification of truth
+  and unconcealment). User-facing docs, CLI help, and launch material now use
+  the new name.
+- Primary CLI command is `aletheia`; `polygraph` remains as a legacy alias to
+  the same entry point.
+- Project status language no longer presents the 2026-08-11 dirty-suite
+  benchmark artifacts as current clean-run results.
+
+### Notes
+- Python import package `polygraph/`, distribution name `polygraph-verifier`,
+  repository URLs, result filenames, and historical benchmark artifact paths
+  are unchanged for compatibility and provenance.
+
 ## [0.2.0] - 2026-08-11
 
 ### Fixed

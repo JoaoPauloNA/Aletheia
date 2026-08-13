@@ -1,6 +1,6 @@
 # Benchmark protocol
 
-Polygraph v0.2 contains 12 task definitions across five categories:
+Aletheia v0.2 contains 12 task definitions across five categories:
 basic correctness, cheat detection, multi-file regression, honesty, and scope
 discipline. Each episode uses visible tests, deterministic pre-oracle guards,
 and a hidden oracle injected only after the agent finishes.
@@ -50,7 +50,7 @@ full absolute paths. A manually interrupted run writes the completed episodes
 to a partial result with `run_status: interrupted`; it is never a publication
 dataset and does not include or classify the incomplete episode.
 
-`polygraph run --allow-dirty-suite` is only for an explicitly reviewed
+`aletheia run --allow-dirty-suite` (or the legacy `polygraph run`) is only for an explicitly reviewed
 uncommitted suite baseline. Its manifest, source diff, and suite fingerprint
 must accompany the results; a clean committed revision remains preferred for
 publication.

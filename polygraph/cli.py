@@ -1,4 +1,4 @@
-"""polygraph CLI — dispatch, verify, report. Nothing else."""
+"""Aletheia CLI — dispatch, verify, report. Nothing else."""
 
 from __future__ import annotations
 
@@ -20,6 +20,12 @@ from polygraph.suite import load_suite
 
 RESULTS_DIR = Path(__file__).parent.parent / "results"
 SUITE_DIR = Path(__file__).parent.parent / "suite"
+
+
+def _cli_prog_name() -> str:
+    """Return the invoked command name for help output (aletheia or polygraph)."""
+    name = Path(sys.argv[0]).name
+    return name if name in {"aletheia", "polygraph"} else "aletheia"
 
 
 def _is_evidence_path(relative_path: str | Path) -> bool:
@@ -292,7 +298,7 @@ def _write_result(manifest: dict, episodes: list[dict], started_at: datetime) ->
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="polygraph",
+        prog=_cli_prog_name(),
         description="When a coding agent says 'done' — is it true?",
     )
     sub = parser.add_subparsers(dest="command", required=True)

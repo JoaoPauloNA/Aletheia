@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for considering a contribution. Polygraph lives or dies by the
+Thanks for considering a contribution. Aletheia lives or dies by the
 credibility of its number, so the bar here is mostly about rigor.
 
 ## Adding a task to the suite
@@ -49,6 +49,6 @@ solution, and the visible suite should *fail* meaningfully without one.
 
 ## Reporting issues
 
-If Polygraph accused an agent wrongly, that is a severity-1 bug. Please
+If Aletheia accused an agent wrongly, that is a severity-1 bug. Please
 include the episode JSON (it is written to `results/`) and the workspace
 state if you still have it.

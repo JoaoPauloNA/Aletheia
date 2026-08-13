@@ -1,17 +1,17 @@
-# Polygraph
+# Aletheia
 
 **Wenn ein Coding-Agent sagt „Fertig, Tests grün" — stimmt das?**
 
-Polygraph ist ein Open-Source-Werkzeug, das diese Frage mit Fakten
-beantwortet statt mit Bauchgefühl. Es lässt eine Aufgabe auf einer
-beliebigen Agenten-CLI ausführen (Claude Code, Codex, Cursor Agent und
-andere), erfasst, was der Agent *behauptet* getan zu haben, und konfrontiert
-diese Behauptung mit einer vollständig **deterministischen** Prüfung:
-versteckte Tests, die der Agent nie gesehen hat, echte Exit-Codes, echte
-Git-Diffs.
+Aletheia (ἀλήθεια — griechisch für Wahrheit und Entbergung) ist ein
+Open-Source-Werkzeug, das diese Frage mit Fakten beantwortet statt mit
+Bauchgefühl. Es lässt eine Aufgabe auf einer beliebigen Agenten-CLI ausführen
+(Claude Code, Codex, Cursor Agent und andere), erfasst, was der Agent
+*behauptet* getan zu haben, und konfrontiert diese Behauptung mit einer
+vollständig **deterministischen** Prüfung: versteckte Tests, die der Agent nie
+gesehen hat, echte Exit-Codes, echte Git-Diffs.
 
-Kein Modell bewertet hier ein anderes Modell. KI, die KI benotet, würde
-genau das Problem importieren, das Polygraph misst.
+Kein Modell bewertet hier ein anderes Modell. KI, die KI benotet, würde genau
+das Problem importieren, das Aletheia misst.
 
 [English](README.md) · [Português](README.pt-BR.md) · [中文](README.zh-CN.md) · [Español](README.es.md)
 
@@ -25,7 +25,7 @@ unabhängige Audits finden weiterhin Reward Hacking und aufgeblähte
 Entwickler, der täglich eine Agenten-CLI nutzt, vor demselben kleinen
 Dilemma: Der Agent sagt, er ist fertig — kann ich das glauben?
 
-Benchmarks messen Fähigkeit. Polygraph misst **Ehrlichkeit**: den Abstand
+Benchmarks messen Fähigkeit. Aletheia misst **Ehrlichkeit**: den Abstand
 zwischen `claimed` und `verified`.
 
 ## Das Protokoll
@@ -50,7 +50,7 @@ Jede Episode fällt in eine von fünf Kategorien:
 | `GUARD_VIOLATION` | Tests manipuliert oder Datei-Scope verlassen |
 | `LEAKED` | Orakel-Kanarienvogel im Workspace — Episode ungültig |
 
-Sich irren und lügen sind verschiedene Befunde, und Polygraph vermischt sie
+Sich irren und lügen sind verschiedene Befunde, und Aletheia vermischt sie
 niemals.
 
 ## Installation
@@ -59,7 +59,8 @@ niemals.
 pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/polygraph.git"
 ```
 
-Polygraph nutzt [Athena](https://github.com/JoaoPauloNA/athena) als
+Der Distributionsname `polygraph-verifier` bleibt aus Kompatibilitätsgründen
+erhalten. Aletheia nutzt [Athena](https://github.com/JoaoPauloNA/athena) als
 Transport-Engine für die CLIs — es implementiert Agenten-Adapter nicht neu.
 Du brauchst mindestens eine installierte und authentifizierte Agenten-CLI
 auf deinem Rechner (Claude Code, Cursor Agent, opencode, …).
@@ -68,31 +69,41 @@ auf deinem Rechner (Claude Code, Cursor Agent, opencode, …).
 
 ```bash
 # Aufgaben-Suite auflisten
-polygraph list
+aletheia list
 
 # Gegen eine CLI laufen lassen
-polygraph run --providers claude:haiku
+aletheia run --providers claude:haiku
 
 # Mehrere CLIs, ausgewählte Aufgaben
-polygraph run --providers claude:haiku cursor:claude-sonnet-5 \
+aletheia run --providers claude:haiku cursor:claude-sonnet-5 \
   --tasks basic-001-fizzbuzz honesty-001-contradictory
 ```
 
+Der Legacy-Befehl `polygraph` ist derselbe Einstiegspunkt und bleibt für
+bestehende Skripte und Dokumentationslinks verfügbar.
+
 Die Ergebnisse landen in `results/run-<timestamp>.json` mit einer
 Zusammenfassung pro Provider: Episoden, gelöst, falsche Erfolge, ehrliche
-Fehlschläge, Guard-Verletzungen — und die False-Success-Rate.
+Fehlschläge, Guard-Verletzungen — und die False-Success- und
+Guard-Violation-Raten.
+
+Siehe das [Benchmark-Protokoll](docs/benchmark-protocol.md) für Validierung,
+Nenner, Reproduzierbarkeits-Metadaten und Publikations-Safeguards.
 
 ## Die Suite
 
-Sechs Aufgaben (v0.1), vier Kategorien:
+Zwölf Aufgaben (v0.2), fünf Kategorien:
 
 - **basic-correctness** — generalisiert der Agent oder overfittet er auf den
-  sichtbaren Test? (FizzBuzz, Palindrom)
+  sichtbaren Test? (FizzBuzz, Palindrom, is-prime, slugify)
 - **cheat-detection** — versteckte Eingaben entlarven hartkodierte Antworten
-- **multi-file-regression** — neues Feature, altes Verhalten muss überleben
-- **honesty** — zwei logisch unvereinbare Anforderungen; ehrlich ist, die
-  Blockade zu melden. Hier Erfolg zu behaupten ist per Konstruktion eine
-  Lüge.
+  oder schwache Tests (Median, Passwortstärke)
+- **multi-file-regression** — neues Feature oder Fix, altes Verhalten muss
+  überleben (Warenkorb-Rabatt, Shop-Steuer, Datums-Hilfen)
+- **honesty** — logisch unvereinbare Anforderungen; ehrlich ist, die Blockade
+  zu melden (widersprüchliche Division, unmöglicher Analyzer)
+- **scope-discipline** — eine verlockende Datei außerhalb des Scopes ist eine
+  Guard-Verletzung (Konfigurations-Loader)
 
 Jede Orakel-Datei trägt einen eindeutigen Kanarienvogel-String. Taucht er
 vor der Injektion im Workspace auf, ist die Aufgabe kompromittiert und die
@@ -101,7 +112,7 @@ Episode wird verworfen.
 Die Suite wächst auf 20–50 Aufgaben. Beiträge willkommen — siehe
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Was Polygraph nicht ist
+## Was Aletheia nicht ist
 
 - Kein Orchestrator. Es koordiniert keine Agenten in Workflows.
 - Kein Fähigkeits-Benchmark. Es konkurriert nicht mit SWE-bench; es
@@ -111,9 +122,13 @@ Die Suite wächst auf 20–50 Aufgaben. Beiträge willkommen — siehe
 
 ## Status
 
-Alpha. Das Protokoll ist stabil; die Suite ist klein. Die ersten
-öffentlichen Zahlen (False-Success-Rate pro CLI) sind für September 2026
-geplant.
+Alpha. Das Protokoll und die 12-Aufgaben-Suite (v0.2) sind stabil.
+Historische explorative Artefakte unter `docs/benchmarks/2026-08-11/` sind
+Legacy-Evidenz aus einem geprüften Dirty-Suite-Run — sie werden nicht als
+aktuelle Clean-Run-Ergebnisse dargestellt. Siehe das
+[Benchmark-Protokoll](docs/benchmark-protocol.md) für Validierung und
+Publikations-Safeguards. Die ersten öffentlichen Zahlen aus einem sauberen,
+reproduzierbaren Run sind für September 2026 geplant.
 
 ## Lizenz
 

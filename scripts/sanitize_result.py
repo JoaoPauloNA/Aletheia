@@ -1,4 +1,4 @@
-"""Create a deterministic, publication-safe Polygraph result artifact."""
+"""Create a deterministic, publication-safe Aletheia result artifact."""
 
 from __future__ import annotations
 

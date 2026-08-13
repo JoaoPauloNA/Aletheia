@@ -1,3 +1,3 @@
-"""Polygraph — deterministic claimed-vs-verified verification for coding agents."""
+"""Aletheia — deterministic claimed-vs-verified verification for coding agents."""
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Restore the Polygraph launch tabs and refill everything via Kimi WebBridge.
+"""Restore the Aletheia launch tabs and refill everything via Kimi WebBridge.
 
 Prereqs:
   - Browser open with the Kimi WebBridge extension connected (daemon on 127.0.0.1:10086)
@@ -10,7 +10,7 @@ Usage:
   python3 scripts/restore-launch-tabs.py --check    # only verify daemon + extension
 
 What it does:
-  1. Opens a tab group "Lancamento Polygraph" with dev.to / LinkedIn / Product Hunt
+  1. Opens a tab group "Lancamento Aletheia" with dev.to / LinkedIn / Product Hunt
   2. Re-inserts the LinkedIn post into the composer (does NOT click Publish)
   3. Refills the Product Hunt launch form (does NOT submit)
   4. Uploads gallery assets on the "Images and media" step (best effort)
@@ -111,10 +111,10 @@ d.focus();s.call(d,%s);d.dispatchEvent(new Event('input',{bubbles:true}));return
         if r != "ok":
             print(f"    [warn] field {name}: {r}")
 
-    set_input("name", "Polygraph")
-    set_input("tagline", 'Polygraph for coding agents: is "done" actually true?')
+    set_input("name", "Aletheia")
+    set_input("tagline", 'Aletheia for coding agents: is "done" actually true?')
     set_input("description",
-              'When a coding agent says "done, tests passing" — is it true? Polygraph runs your agent '
+              'When a coding agent says "done, tests passing" — is it true? Aletheia runs your agent '
               'in a sandbox, injects hidden tests after the claim, and reports SOLVED vs FALSE_SUCCESS '
               'vs honest failure. Open source, works with any CLI.', textarea=True)
     comment = (LAUNCH / "producthunt-kit.md").read_text()

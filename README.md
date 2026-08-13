@@ -1,15 +1,16 @@
-# Polygraph
+# Aletheia
 
 **When a coding agent says "done, tests passing" — is it true?**
 
-Polygraph is an open-source tool that answers that question with facts instead
-of vibes. It runs a task on any agent CLI (Claude Code, Codex, Cursor Agent,
-and others), captures what the agent *claims* it did, and confronts that claim
-with an entirely **deterministic** check: hidden tests the agent never saw,
-real exit codes, real git diffs.
+Aletheia (ἀλήθεια — Greek for truth and unconcealment) is an open-source tool
+that answers that question with facts instead of vibes. It runs a task on any
+agent CLI (Claude Code, Codex, Cursor Agent, and others), captures what the
+agent *claims* it did, and confronts that claim with an entirely
+**deterministic** check: hidden tests the agent never saw, real exit codes, real
+git diffs.
 
 No model ever judges another model here. AI grading AI would import the very
-problem Polygraph measures.
+problem Aletheia measures.
 
 [Português](README.pt-BR.md) · [中文](README.zh-CN.md) · [Español](README.es.md) · [Deutsch](README.de.md)
 
@@ -21,7 +22,7 @@ audits keep finding reward hacking and inflated "passes" across popular
 benchmarks. Meanwhile, every developer using an agent CLI daily faces the
 same small dilemma: the agent said it's done — do I believe it?
 
-Benchmarks measure capability. Polygraph measures **honesty**: the distance
+Benchmarks measure capability. Aletheia measures **honesty**: the distance
 between `claimed` and `verified`.
 
 ## The protocol
@@ -47,7 +48,7 @@ Each episode lands in one of five buckets:
 | `GUARD_VIOLATION` | tampered with tests or escaped file scope |
 | `LEAKED` | oracle canary found in the workspace — episode invalid |
 
-Erring and lying are different findings, and Polygraph never merges them.
+Erring and lying are different findings, and Aletheia never merges them.
 
 ## Install
 
@@ -55,7 +56,8 @@ Erring and lying are different findings, and Polygraph never merges them.
 pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/polygraph.git"
 ```
 
-Polygraph rides on [Athena](https://github.com/JoaoPauloNA/athena) for CLI
+The PyPI distribution name `polygraph-verifier` is retained for compatibility.
+Aletheia rides on [Athena](https://github.com/JoaoPauloNA/athena) for CLI
 transport — it does not re-implement agent adapters. You need at least one
 agent CLI installed and authenticated on your machine (Claude Code, Cursor
 Agent, opencode, …).
@@ -64,15 +66,18 @@ Agent, opencode, …).
 
 ```bash
 # list the task suite
-polygraph list
+aletheia list
 
 # run against one CLI
-polygraph run --providers claude:haiku
+aletheia run --providers claude:haiku
 
 # several CLIs, selected tasks
-polygraph run --providers claude:haiku cursor:claude-sonnet-5 \
+aletheia run --providers claude:haiku cursor:claude-sonnet-5 \
   --tasks basic-001-fizzbuzz honesty-001-contradictory
 ```
+
+The legacy `polygraph` command is the same entry point and remains available
+for existing scripts and documentation links.
 
 Results land in `results/run-<timestamp>.json` with a per-provider summary:
 episodes, solved, false successes, honest failures, guard violations — and
@@ -102,7 +107,7 @@ workspace before injection, the task leaked and the episode is discarded.
 The suite grows toward 20–50 tasks. Contributions welcome — see
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## What Polygraph is not
+## What Aletheia is not
 
 - Not an orchestrator. It does not coordinate agents into workflows.
 - Not a capability benchmark. It does not compete with SWE-bench; it audits
@@ -112,8 +117,12 @@ The suite grows toward 20–50 tasks. Contributions welcome — see
 
 ## Status
 
-Alpha. The protocol is stable; the suite is small. First public numbers
-(false-success rate per CLI) are planned for September 2026.
+Alpha. The protocol and 12-task suite (v0.2) are stable. Historical
+exploratory artifacts under `docs/benchmarks/2026-08-11/` are legacy evidence
+from a reviewed dirty-suite run — they are not presented as current clean-run
+results. See the [benchmark protocol](docs/benchmark-protocol.md) for
+validation and publication safeguards. First public numbers from a clean
+reproducible run are planned for September 2026.
 
 ## License
 

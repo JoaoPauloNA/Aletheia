@@ -685,6 +685,15 @@ def test_provider_version_probe_redacts_home_path_and_email(monkeypatch):
     assert "<redacted-email>" in output
 
 
+def test_cli_prog_name_from_argv(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["polygraph", "list"])
+    assert cli._cli_prog_name() == "polygraph"
+    monkeypatch.setattr(sys, "argv", ["aletheia", "run"])
+    assert cli._cli_prog_name() == "aletheia"
+    monkeypatch.setattr(sys, "argv", ["python", "-m", "polygraph"])
+    assert cli._cli_prog_name() == "aletheia"
+
+
 def test_manifest_has_private_stable_fingerprints_and_required_schema(monkeypatch):
     tasks = load_suite()
     started_at = datetime(2026, 8, 11, 12, 0, tzinfo=timezone.utc)

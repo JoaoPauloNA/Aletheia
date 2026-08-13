@@ -11,9 +11,9 @@ tags: ai, programming, tooling, opensource
 > valid. They reflect an outdated run and must not be quoted, reused, or cited
 > as evidence.
 >
-> Current local evidence lives in `docs/benchmark-protocol.md` (the benchmark
-> protocol) and `docs/benchmarks/2026-08-11/analysis.md` (the analysis of the
-> latest benchmark run).
+> Current protocol and publication safeguards live in `docs/benchmark-protocol.md`.
+> Historical exploratory artifacts are under `docs/benchmarks/2026-08-11/` and must
+> not be cited as current clean-run evidence.
 >
 > Any future publication still requires a clean, reproducible benchmark rerun
 > whose results are committed to the repository before a post is written.

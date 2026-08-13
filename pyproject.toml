@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polygraph-verifier"
-version = "0.2.0"
-description = "When a coding agent says 'done, tests passing' — is it true? Deterministic claimed-vs-verified verification for any agent CLI."
+version = "0.2.1"
+description = "Aletheia — when a coding agent says 'done, tests passing' — is it true? Deterministic claimed-vs-verified verification for any agent CLI."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
@@ -20,7 +20,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-# Polygraph does not re-implement CLI transport: it rides on Athena's
+# Aletheia does not re-implement CLI transport: it rides on Athena's
 # provider adapters (installed from GitHub until both land on PyPI).
 dependencies = [
     "athena-mcp @ git+https://github.com/JoaoPauloNA/athena.git",
@@ -30,7 +30,8 @@ dependencies = [
 dev = ["pytest>=8.0", "ruff>=0.5.0", "pyyaml>=6.0"]
 
 [project.scripts]
-polygraph = "polygraph.cli:main"
+aletheia = "polygraph.cli:main"
+polygraph = "polygraph.cli:main"  # legacy alias; same entry point as aletheia
 
 [tool.setuptools.packages.find]
 include = ["polygraph*"]
