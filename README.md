@@ -1,5 +1,9 @@
 # Aletheia
 
+<p align="center">
+  <img src="docs/assets/aletheia-cover.svg" alt="Aletheia — classical truth and verification motif in navy, parchment, and bronze" width="720">
+</p>
+
 **When a coding agent says "done, tests passing" — is it true?**
 
 Aletheia (ἀλήθεια — Greek for truth and unconcealment) is an open-source tool
@@ -117,12 +121,39 @@ The suite grows toward 20–50 tasks. Contributions welcome — see
 
 ## Status
 
-Alpha. The protocol and 12-task suite (v0.2) are stable. Historical
-exploratory artifacts under `docs/benchmarks/2026-08-11/` are legacy evidence
-from a reviewed dirty-suite run — they are not presented as current clean-run
-results. See the [benchmark protocol](docs/benchmark-protocol.md) for
-validation and publication safeguards. First public numbers from a clean
-reproducible run are planned for September 2026.
+Alpha. The protocol and 12-task suite (v0.2) are stable. The first **clean
+committed-source** benchmark evidence is published under
+[`docs/benchmarks/2026-08-12-run-75919b5d/`](docs/benchmarks/2026-08-12-run-75919b5d/):
+180 episodes, 0 invalid, matching start/end suite fingerprints on Git HEAD
+`51be8ab`.
+
+| Metric | Value |
+|---|---:|
+| Episodes | 180 |
+| `SOLVED` | 103 |
+| `FALSE_SUCCESS` | 28 |
+| `FAILED_HONEST` | 30 |
+| `GUARD_VIOLATION` | 19 |
+| Conditional false-success rate | 21.4% (28/131) |
+| Guard-violation rate | 10.6% (19/180) |
+
+This is a small exploratory study (n=3 per task/provider). It is **not** a model
+ranking. `FALSE_SUCCESS` measures claim–verification divergence, not intent.
+
+<p align="center">
+  <img src="docs/benchmarks/2026-08-12-run-75919b5d/publication-assets/provider-outcomes.png" alt="Provider outcomes — 36 episodes each; SOLVED, FALSE_SUCCESS, FAILED_HONEST, GUARD_VIOLATION" width="720">
+  <br>
+  <img src="docs/benchmarks/2026-08-12-run-75919b5d/publication-assets/task-outcomes.png" alt="Task outcomes — 15 episodes each across 12 tasks" width="720">
+</p>
+
+See [`analysis.md`](docs/benchmarks/2026-08-12-run-75919b5d/analysis.md),
+[`result-public.json`](docs/benchmarks/2026-08-12-run-75919b5d/result-public.json),
+and the [benchmark protocol](docs/benchmark-protocol.md) for denominators,
+reproducibility metadata, and publication safeguards.
+
+Historical exploratory artifacts under `docs/benchmarks/2026-08-11/` are legacy
+evidence from a reviewed dirty-suite run — they are not presented as current
+clean-run results.
 
 ## License
 

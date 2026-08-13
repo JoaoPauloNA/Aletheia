@@ -30,6 +30,17 @@ PATTERNS = {
     "FAILED_HONEST": "url(#failed-honest-pattern)",
     "GUARD_VIOLATION": "url(#guard-violation-pattern)",
 }
+THEME = {
+    "background": "#F4EEDC",
+    "ink": "#1B2A41",
+    "muted": "#4A5D73",
+    "grid": "#C9BFA8",
+    "segment_text": "#F8F3E8",
+    "solved": "#2F4A6B",
+    "false_success": "#B08D57",
+    "failed_honest": "#7A7268",
+    "guard_violation": "#6B4E3D",
+}
 
 
 def _rate(numerator: int, denominator: int) -> str:
@@ -158,17 +169,17 @@ def _markdown_table(headers: list[str], rows: list[dict[str, Any]]) -> str:
 def _svg_patterns() -> str:
     patterns = (
         '<pattern id="solved-pattern" width="8" height="8" patternUnits="userSpaceOnUse">'
-        '<rect width="8" height="8" fill="#4C78A8"/>'
-        '<path d="M0 8L8 0" stroke="#FFFFFF" stroke-opacity=".40" stroke-width="1"/></pattern>',
+        f'<rect width="8" height="8" fill="{THEME["solved"]}"/>'
+        '<path d="M0 8L8 0" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="1"/></pattern>',
         '<pattern id="false-success-pattern" width="8" height="8" patternUnits="userSpaceOnUse">'
-        '<rect width="8" height="8" fill="#E39C37"/>'
-        '<circle cx="2" cy="2" r="1.2" fill="#432B08"/></pattern>',
+        f'<rect width="8" height="8" fill="{THEME["false_success"]}"/>'
+        '<circle cx="2" cy="2" r="1.2" fill="#4A3418"/></pattern>',
         '<pattern id="failed-honest-pattern" width="8" height="8" patternUnits="userSpaceOnUse">'
-        '<rect width="8" height="8" fill="#7A7A7A"/>'
-        '<path d="M0 2H8M0 6H8" stroke="#FFFFFF" stroke-opacity=".65" stroke-width="1"/></pattern>',
+        f'<rect width="8" height="8" fill="{THEME["failed_honest"]}"/>'
+        '<path d="M0 2H8M0 6H8" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1"/></pattern>',
         '<pattern id="guard-violation-pattern" width="8" height="8" patternUnits="userSpaceOnUse">'
-        '<rect width="8" height="8" fill="#8064A2"/>'
-        '<path d="M2 0V8M6 0V8" stroke="#FFFFFF" stroke-opacity=".50" stroke-width="1"/></pattern>',
+        f'<rect width="8" height="8" fill="{THEME["guard_violation"]}"/>'
+        '<path d="M2 0V8M6 0V8" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="1"/></pattern>',
     )
     return "<defs>\n  " + "\n  ".join(patterns) + "\n</defs>"
 
@@ -192,9 +203,20 @@ def render_chart(
         ),
         f"<title id=\"chart-title\">{escape(title)}</title>",
         f"<desc id=\"chart-desc\">{escape(desc)}</desc>",
-        "<style>text{font-family:Arial,sans-serif;fill:#1F2933}.title{font-size:27px;font-weight:700}.subtitle{font-size:15px;fill:#52606D}.axis{font-size:13px;fill:#52606D}.label{font-size:15px;font-weight:600}.segment{font-size:12px;font-weight:700}.note{font-size:12px;fill:#52606D}</style>",
+        (
+            "<style>"
+            f"text{{font-family:Georgia,'Times New Roman',serif;fill:{THEME['ink']}}}"
+            ".title{font-size:27px;font-weight:700}"
+            f".subtitle{{font-size:15px;fill:{THEME['muted']}}}"
+            f".axis{{font-size:13px;fill:{THEME['muted']}}}"
+            ".label{font-size:15px;font-weight:600}"
+            f".segment{{font-size:12px;font-weight:700;fill:{THEME['segment_text']}}}"
+            f".note{{font-size:12px;fill:{THEME['muted']}}}"
+            "</style>"
+        ),
         _svg_patterns(),
-        f'<rect x="0" y="0" width="{width}" height="{height}" fill="#FFFFFF"/>',
+        f'<rect x="0" y="0" width="{width}" height="{height}" fill="{THEME["background"]}"/>',
+        f'<rect x="0" y="0" width="{width}" height="6" fill="{THEME["false_success"]}" opacity="0.85"/>',
         f'<text class="title" x="40" y="45">{escape(title)}</text>',
         f'<text class="subtitle" x="40" y="72">{escape(subtitle)}</text>',
     ]
@@ -214,7 +236,7 @@ def render_chart(
             [
                 (
                     f'<line x1="{x:.1f}" y1="{top - 8}" x2="{x:.1f}" y2="{height - 68}" '
-                    'stroke="#CBD2D9" stroke-width="1"/>'
+                    f'stroke="{THEME["grid"]}" stroke-width="1"/>'
                 ),
                 f'<text class="axis" x="{x:.1f}" y="{top - 20}" text-anchor="middle">{percent}%</text>',
             ]

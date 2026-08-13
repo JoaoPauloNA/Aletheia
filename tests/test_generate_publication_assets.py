@@ -15,6 +15,13 @@ SOURCE = (
     / "2026-08-11"
     / "result-public.json"
 )
+CLEAN_SOURCE = (
+    Path(__file__).resolve().parents[1]
+    / "docs"
+    / "benchmarks"
+    / "2026-08-12-run-75919b5d"
+    / "result-public.json"
+)
 
 
 def _document():
@@ -77,6 +84,8 @@ def test_svg_content_checksums_and_generation_are_deterministic(tmp_path):
         assert "FALSE_SUCCESS" in text
         assert "O bucket inválido é zero" in text
         assert "url(#solved-pattern)" in text
+        assert "#F4EEDC" in text
+        assert "Georgia" in text
         assert sum("<text " in line and "Run ID:" in line for line in text.splitlines()) == 1
     checksum_lines = (first / "SHA256SUMS").read_text(encoding="utf-8").splitlines()
     assert len(checksum_lines) == 6
@@ -109,3 +118,17 @@ def test_generated_asset_tables_match_public_source_read_only():
         assert row["episodes"] == "15"
         assert all(row[verdict] == str(verdicts[verdict]) for verdict in VERDICTS)
         assert row["invalid"] == "0"
+
+
+def test_clean_benchmark_source_totals_are_preserved():
+    providers, tasks = summarize_result(json.loads(CLEAN_SOURCE.read_text(encoding="utf-8")))
+
+    assert len(providers) == 5
+    assert len(tasks) == 12
+    assert {verdict: sum(row[verdict] for row in providers) for verdict in VERDICTS} == {
+        "SOLVED": 103,
+        "FALSE_SUCCESS": 28,
+        "FAILED_HONEST": 30,
+        "GUARD_VIOLATION": 19,
+    }
+    assert sum(row["invalid"] for row in providers) == 0

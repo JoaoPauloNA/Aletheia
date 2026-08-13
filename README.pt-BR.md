@@ -1,5 +1,9 @@
 # Aletheia
 
+<p align="center">
+  <img src="docs/assets/aletheia-cover.svg" alt="Aletheia — motivo clássico de verdade e verificação em azul-marinho, pergaminho e bronze" width="720">
+</p>
+
 **Quando um agente de código diz "pronto, testes passando" — é verdade?**
 
 Aletheia (ἀλήθεια — verdade e desvelamento em grego) é uma ferramenta open
@@ -117,12 +121,40 @@ veja [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Status
 
-Alpha. O protocolo e a suíte de 12 tarefas (v0.2) estão estáveis. Artefatos
-exploratórios históricos em `docs/benchmarks/2026-08-11/` são evidência legada
-de um run com suíte suja revisada — não são apresentados como resultados atuais
-de run limpo. Veja o [protocolo de benchmark](docs/benchmark-protocol.md) para
-validação e salvaguardas de publicação. Os primeiros números públicos de um run
-limpo e reprodutível estão planejados para setembro de 2026.
+Alpha. O protocolo e a suíte de 12 tarefas (v0.2) estão estáveis. A primeira
+evidência de benchmark com **fonte commitada limpa** está publicada em
+[`docs/benchmarks/2026-08-12-run-75919b5d/`](docs/benchmarks/2026-08-12-run-75919b5d/):
+180 episódios, 0 inválidos, fingerprints de suíte de início e fim coincidentes
+no Git HEAD `51be8ab`.
+
+| Métrica | Valor |
+|---|---:|
+| Episódios | 180 |
+| `SOLVED` | 103 |
+| `FALSE_SUCCESS` | 28 |
+| `FAILED_HONEST` | 30 |
+| `GUARD_VIOLATION` | 19 |
+| Taxa condicional de falso sucesso | 21,4% (28/131) |
+| Taxa de violação de guardas | 10,6% (19/180) |
+
+Este é um estudo exploratório pequeno (n=3 por tarefa/provedor). **Não** é um
+ranking de modelos. `FALSE_SUCCESS` mede divergência entre alegação e
+verificação, não intenção.
+
+<p align="center">
+  <img src="docs/benchmarks/2026-08-12-run-75919b5d/publication-assets/provider-outcomes.png" alt="Desfechos por provedor — 36 episódios cada; SOLVED, FALSE_SUCCESS, FAILED_HONEST, GUARD_VIOLATION" width="720">
+  <br>
+  <img src="docs/benchmarks/2026-08-12-run-75919b5d/publication-assets/task-outcomes.png" alt="Desfechos por tarefa — 15 episódios cada em 12 tarefas" width="720">
+</p>
+
+Veja [`analysis.md`](docs/benchmarks/2026-08-12-run-75919b5d/analysis.md),
+[`result-public.json`](docs/benchmarks/2026-08-12-run-75919b5d/result-public.json)
+e o [protocolo de benchmark](docs/benchmark-protocol.md) para denominadores,
+metadados de reprodutibilidade e salvaguardas de publicação.
+
+Artefatos exploratórios históricos em `docs/benchmarks/2026-08-11/` são evidência
+legada de um run com suíte suja revisada — não são apresentados como resultados
+atuais de run limpo.
 
 ## Licença
 
