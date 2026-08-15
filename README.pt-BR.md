@@ -57,7 +57,7 @@ Errar e mentir são achados diferentes, e a Aletheia nunca os mistura.
 ## Instalação
 
 ```bash
-pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/polygraph.git"
+pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/Aletheia.git"
 ```
 
 O nome de distribuição `polygraph-verifier` é mantido por compatibilidade. A

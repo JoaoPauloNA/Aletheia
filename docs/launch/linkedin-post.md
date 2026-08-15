@@ -8,7 +8,7 @@ That one report turned into a side project. I built Aletheia, an open-source too
 
 Historical exploratory numbers from August 2026 live in the repo under `docs/benchmarks/2026-08-11/` as legacy evidence from a reviewed dirty-suite run — they are not presented as current clean-run results. Any public numbers require a clean reproducible rerun first.
 
-Project is open source (MIT), runs against your own CLI in five minutes: github.com/JoaoPauloNA/polygraph
+Project is open source (MIT), runs against your own CLI in five minutes: github.com/JoaoPauloNA/Aletheia
 
 CLI: `aletheia` (legacy alias: `polygraph`).
 

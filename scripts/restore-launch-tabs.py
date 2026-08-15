@@ -96,7 +96,7 @@ def fill_ph_text():
     # start from URL field
     cmd("navigate", url=PH_NEW_POST)
     time.sleep(3)
-    evaluate("""(()=>{const i=document.querySelector('input[name=url]');const s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;i.focus();s.call(i,'https://github.com/JoaoPauloNA/polygraph');i.dispatchEvent(new Event('input',{bubbles:true}));return 1;})()""")
+    evaluate("""(()=>{const i=document.querySelector('input[name=url]');const s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;i.focus();s.call(i,'https://github.com/JoaoPauloNA/Aletheia');i.dispatchEvent(new Event('input',{bubbles:true}));return 1;})()""")
     time.sleep(1)
     evaluate("""(()=>{const b=[...document.querySelectorAll('button')].find(x=>/Get started/i.test(x.textContent));b.click();return 1;})()""")
     time.sleep(4)

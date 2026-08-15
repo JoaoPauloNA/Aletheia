@@ -41,7 +41,7 @@ Aletheia（ἀλήθεια——希腊语中的真理与显现）是一个开源
 ## 安装
 
 ```bash
-pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/polygraph.git"
+pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/Aletheia.git"
 ```
 
 发行包名称 `polygraph-verifier` 为兼容性而保留。Aletheia 借助 [Athena](https://github.com/JoaoPauloNA/athena) 作为 CLI 传输引擎——它不会重新实现智能体适配器。你的机器上需要至少安装并登录一个智能体 CLI（Claude Code、Cursor Agent、opencode 等）。

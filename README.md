@@ -57,7 +57,7 @@ Erring and lying are different findings, and Aletheia never merges them.
 ## Install
 
 ```bash
-pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/polygraph.git"
+pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/Aletheia.git"
 ```
 
 The PyPI distribution name `polygraph-verifier` is retained for compatibility.

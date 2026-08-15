@@ -56,7 +56,7 @@ niemals.
 ## Installation
 
 ```bash
-pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/polygraph.git"
+pip install "polygraph-verifier @ git+https://github.com/JoaoPauloNA/Aletheia.git"
 ```
 
 Der Distributionsname `polygraph-verifier` bleibt aus Kompatibilitätsgründen
