@@ -214,6 +214,14 @@ def run_episode(
         report = _agent_report(result)
         ep.report = report
         ep.report_excerpt = report[:600]
+
+        # No report means no claim. Treating an empty transport result as an
+        # implicit success would manufacture a FALSE_SUCCESS attribution.
+        if not report.strip():
+            ep.verdict = "HARNESS_ERROR"
+            ep.error = "provider returned an empty report"
+            return ep
+
         ep.claimed_done = _claims_done(report)
 
         if result.timed_out:

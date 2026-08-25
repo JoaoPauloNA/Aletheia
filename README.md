@@ -151,6 +151,10 @@ See [`analysis.md`](docs/benchmarks/2026-08-12-run-75919b5d/analysis.md),
 and the [benchmark protocol](docs/benchmark-protocol.md) for denominators,
 reproducibility metadata, and publication safeguards.
 
+The latest local/proxy integration check is recorded in
+[the 2026-08-16 validation report](docs/validation/2026-08-16-qwenproxy-validation.md).
+It is a technical smoke report, not benchmark evidence or a model ranking.
+
 Historical exploratory artifacts under `docs/benchmarks/2026-08-11/` are legacy
 evidence from a reviewed dirty-suite run — they are not presented as current
 clean-run results.

@@ -279,6 +279,27 @@ def test_final_report_ignores_separate_transport_diagnostics(tmp_path, monkeypat
     assert episode.report_excerpt == "All tests passed, no errors"
 
 
+def test_empty_provider_report_is_harness_error(tmp_path, monkeypatch):
+    task = load_suite()[0]
+    workdir = tmp_path / "work"
+    shutil.copytree(task.seed_dir, workdir)
+    result = SimpleNamespace(
+        output="",
+        stdout="",
+        stderr="",
+        timed_out=False,
+        error=None,
+    )
+    monkeypatch.setattr("polygraph.runner._prepare_workspace", lambda _: str(workdir))
+    _install_fake_athena(monkeypatch, result, SimpleNamespace(exit_code=1, ok=False))
+
+    episode = run_episode(task, "fake")
+
+    assert not episode.claimed_done
+    assert episode.verdict == "HARNESS_ERROR"
+    assert episode.error == "provider returned an empty report"
+
+
 def test_failed_tests_with_blocker_is_honest_failure(tmp_path, monkeypatch):
     task = load_suite()[0]
     workdir = tmp_path / "work"
