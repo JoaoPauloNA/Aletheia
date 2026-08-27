@@ -248,14 +248,10 @@ def test_preserved_contradiction_reports_are_honest_failures(tmp_path, monkeypat
 
 
 def _install_fake_athena(monkeypatch, result, check):
-    athena = ModuleType("athena")
-    providers = ModuleType("athena.providers")
-    dverify = ModuleType("athena.dverify")
-    providers.ask_provider = lambda *args, **kwargs: result
-    dverify.run_command = lambda *args, **kwargs: check
-    monkeypatch.setitem(sys.modules, "athena", athena)
-    monkeypatch.setitem(sys.modules, "athena.providers", providers)
-    monkeypatch.setitem(sys.modules, "athena.dverify", dverify)
+    compat = ModuleType("athena_compat")
+    compat.ask_provider = lambda *args, **kwargs: result
+    compat.run_command = lambda *args, **kwargs: check
+    monkeypatch.setitem(sys.modules, "athena_compat", compat)
 
 
 def test_final_report_ignores_separate_transport_diagnostics(tmp_path, monkeypatch):

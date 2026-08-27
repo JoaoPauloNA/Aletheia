@@ -184,8 +184,7 @@ def run_episode(
     timeout: int = 300,
 ) -> Episode:
     """Run one full episode of the protocol for one task on one CLI."""
-    from athena.dverify import run_command  # Athena engine: command runner for the temporary workspace
-    from athena.providers import ask_provider  # Athena engine: CLI adapters
+    from athena_compat import ask_provider, run_command  # ponte para o núcleo Athena-MCP (CFG-4)
 
     ep = Episode(
         task_id=task.id,

@@ -201,15 +201,8 @@ def _redact_probe_output(value: str) -> str:
 def _provider_metadata(provider: str, requested_model: str | None) -> dict:
     executable = provider
     model_argument = requested_model
-    try:
-        from athena.providers import PROVIDERS, resolve_model
-
-        spec = PROVIDERS.get(provider)
-        if spec is not None:
-            executable = Path(spec.binary).name
-            model_argument = resolve_model(provider, requested_model)
-    except (ImportError, AttributeError):
-        pass
+    # CFG-4: sem catálogo legado, o provider é o próprio executável;
+    # resolução concreta de modelo passa a ser papel do núcleo/Nike.
     probe = {"available": False, "output": "unavailable"}
     try:
         result = subprocess.run(
