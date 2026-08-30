@@ -162,3 +162,16 @@ clean-run results.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+
+## Integração com Athena-MCP (INT-ALE-0)
+
+`athena_compat.py` fornece `ask_provider`/`run_command` sobre o núcleo
+publicado — sem dependência de diretórios fora do controle de versão
+(model forwarding, deadline enforcement, snapshot fail-closed e duplicate
+request handling cobertos em `tests/test_athena_compat_integration.py`).
+
+```bash
+PYTHONPATH=../Athena-MCP:. ../Athena-MCP/.venv/bin/python -m pytest tests -q
+# verificado 2026-08-26: 97 passed (3,9s), ruff clean
+```
