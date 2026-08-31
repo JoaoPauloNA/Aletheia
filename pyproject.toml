@@ -38,7 +38,10 @@ include = ["polygraph*"]
 
 [tool.ruff]
 line-length = 110
-exclude = ["suite/"]   # task fixtures are data, not project code
+exclude = [
+    "suite/",  # task fixtures are data, not project code
+    "scripts/restore-launch-tabs.py",  # manual browser-session helper, not package code
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]

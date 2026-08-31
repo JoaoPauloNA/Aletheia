@@ -156,7 +156,7 @@ def upload_ph_gallery():
             print(f"    uploaded {img.name}")
             uploaded += 1
             time.sleep(2)
-        except Exception as e:
+        except Exception:
             print(f"    [warn] upload {img.name}: blocked by browser")
             break
     if uploaded == 0:
